@@ -14,7 +14,7 @@ You need to install [Git LFS](https://git-lfs.github.com/) to clone this repo an
 You can install the required python packages by running:
 ```cmd
 .\cmd_windows.bat
-pip install -r extensions\Kokoro\requirements.txt
+pip install -r extensions\Kokoro-tts-text-gerneration-webui\requirements.txt
 ```
 
 #### Features
