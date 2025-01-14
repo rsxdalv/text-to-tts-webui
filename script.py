@@ -1,7 +1,7 @@
 import pathlib
 import html
 import time
-from extensions.Kokoro.src.generate import run
+from extensions.KokoroTtsTexGernerationWebui.src.generate import run
 
 from modules import chat, shared, ui_chat
 
