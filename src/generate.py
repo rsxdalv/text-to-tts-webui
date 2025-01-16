@@ -6,14 +6,18 @@ from transformers import AutoTokenizer
 import numpy as np
 from pydub import AudioSegment
 import pathlib
+from huggingface_hub import snapshot_download
 
-os.environ["PHONEMIZER_ESPEAK_LIBRARY"] = r"C:\Program Files\eSpeak NG\libespeak-ng.dll"
-os.environ["PHONEMIZER_ESPEAK_PATH"] = r"C:\Program Files\eSpeak NG\espeak-ng.exe"
+snapshot_download(repo_id="hexgrad/Kokoro-82M", cache_dir =pathlib.Path(__file__).parent, allow_patterns=["*.pth", "*.pt"])
+
+if os.name == 'nt':
+    os.environ["PHONEMIZER_ESPEAK_LIBRARY"] = r"C:\Program Files\eSpeak NG\libespeak-ng.dll"
+    os.environ["PHONEMIZER_ESPEAK_PATH"] = r"C:\Program Files\eSpeak NG\espeak-ng.exe"
 
 from .kokoro import generate, tokenize, phonemize
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
-model_path = pathlib.Path(__file__).parent / 'kokoro-v0_19.pth'
+model_path = pathlib.Path(__file__).parent / 'models--hexgrad--Kokoro-82M' / 'snapshots' / 'e78b910980f63ec856f07ba02a24752a5ab7af5b' / 'kokoro-v0_19.pth'
 MODEL = build_model(model_path, device)
 VOICE_NAME = [
     'af', # Default voice is a 50-50 mix of Bella & Sarah
@@ -21,7 +25,7 @@ VOICE_NAME = [
     'bf_emma', 'bf_isabella', 'bm_george', 'bm_lewis',
     'af_nicole', 'af_sky',
 ][5]
-voise_path = pathlib.Path(__file__).parent / 'voices' / f'{VOICE_NAME}.pt'
+voise_path = pathlib.Path(__file__).parent / 'models--hexgrad--Kokoro-82M' / 'snapshots' / 'e78b910980f63ec856f07ba02a24752a5ab7af5b' / 'voices' / f'{VOICE_NAME}.pt'
 VOICEPACK = torch.load(voise_path, weights_only=True).to(device)
 print(f'Loaded voice: {VOICE_NAME}')
 

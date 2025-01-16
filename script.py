@@ -3,9 +3,7 @@ import html
 import time
 from extensions.KokoroTtsTexGernerationWebui.src.generate import run
 
-from modules import chat, shared, ui_chat
-
-import uuid
+from modules import shared
 
 
 def input_modifier(string, state):
