@@ -3,19 +3,23 @@
 #### License
 This project is licensed under the MIT License and is based on the [Original Kokoro 82M Interferance Code](https://huggingface.co/hexgrad/Kokoro-82M).
 
-The Model weights are NOT under the MIT License and are under the [Apache 2.0 License](https://huggingface.co/hexgrad/Kokoro-82M).
+The Model weights are NOT under the MIT License and are under the [Apache 2.0 License](https://huggingface.co/hexgrad/Kokoro-82M). The model wights will be directly downloaded from the Huggingface.
 
 #### Installation
-This project currently only supports Windows. 
 You need to install [espeak](https://github.com/espeak-ng/espeak-ng/releases) and [ffmpeg](https://ffmpeg.org/download.html).
 
-You need to install [Git LFS](https://git-lfs.github.com/) to clone this repo and download the model weights.
 
 You can install the required python packages by running:
 ```cmd
 .\cmd_windows.bat
-pip install -r extensions\Kokoro-tts-text-gerneration-webui\requirements.txt
+pip install -r extensions\KokoroTtsTextGernerationWebui\requirements.txt
 ```
+
+```bash
+./cmd_linux.sh
+pip install -r extensions/KokoroTtsTextGernerationWebui/requirements.txt
+```
+
 
 #### Features
 
@@ -24,6 +28,7 @@ This is just a workaround and not a perfect solution. If a word is built with mu
 
 #### Roadmap
 - [x] Implement the extension
+- [x] Support all OS
 - [ ] Voice selection
 
 
