@@ -24,7 +24,13 @@ pip install -r extensions/KokoroTtsTextGernerationWebui/requirements.txt
 #### Features
 
 Kokoro is limited to 510 tokens per input. This extension allows you to generate longer texts by splitting the input into multiple parts and concatenating the outputs.
-This is just a workaround and not a perfect solution. If a word is built with multiple tokens, it can happen that the tokensplit is in the middle of the word. This can lead to a bad pronunciation.
+
+The following methods for this are available:
+
+- *Split by Sentance* - The Input is split into Chunks of Sentances that are less than 510 tokens.
+- *Split by Word* - The Input is split into Chunks of Words that are less than 510 tokens.
+
+The first method is recommended as it will keep the context of the text and results in better output quality.
 
 #### Roadmap
 - [x] Implement the extension

@@ -2,17 +2,18 @@ import uuid
 from .models import build_model
 import torch
 import os
-from transformers import AutoTokenizer
 import numpy as np
 from pydub import AudioSegment
 import pathlib
 from huggingface_hub import snapshot_download
 from modules import shared
 from .voices import VOICES
-
+from nltk.tokenize import sent_tokenize
+import nltk
 
 
 snapshot_download(repo_id="hexgrad/Kokoro-82M", cache_dir =pathlib.Path(__file__).parent, allow_patterns=["*.pth", "*.pt"])
+nltk.download('punkt')
 
 if os.name == 'nt':
     os.environ["PHONEMIZER_ESPEAK_LIBRARY"] = r"C:\Program Files\eSpeak NG\libespeak-ng.dll"
@@ -39,9 +40,7 @@ load_voice()
 
 def run(text, preview=False):
     msg_id = str(uuid.uuid4())
-    ps = phonemize(text, lang=voice_name[0])
-    tokenized_text = tokenize(ps)
-    out = split_text(tokenized_text)
+    out = split_text(text)
     segments = generate_audio_chunks(out)
     full_adio = concatenate_audio_segments(segments)
 
@@ -50,18 +49,50 @@ def run(text, preview=False):
 
     return msg_id
 
-def split_text(tokenized_text):
-    
-    chunk_size = 510
+sentance_based = True
 
-    if len(tokenized_text) > chunk_size:
-        print(f'Text is too long ({len(tokenized_text)} tokens), splitting into chunks of {chunk_size} tokens')
-        chunks = [
-            tokenized_text[i:i + chunk_size]
-            for i in range(0, len(tokenized_text), chunk_size)
-        ]
-    else:
-        chunks = [tokenized_text]
+def set_plitting_type(method="Split by Sentance"):
+    global sentance_based
+    sentance_based = True if method == "Split by Sentance" else False
+    print(f'Splitting method: {"Sentance" if sentance_based else "Word"}')
+
+set_plitting_type()
+
+def split_text(text):
+    
+    max_token = 510
+    text_parts = sent_tokenize(text) if sentance_based else text.split()
+    current_text_parts = []
+    chunks = []
+    current_chunk_len = 0
+
+
+    tokenized_text_whole = tokenize(phonemize(text, lang=voice_name[0]))
+    if len(tokenized_text_whole) > max_token:
+        for text_part in text_parts:
+            tokenized_textpart = tokenize(phonemize(text_part, lang=voice_name[0]))
+            additional_tokens = len(tokenized_textpart) + 1
+
+            if current_chunk_len + additional_tokens > max_token and current_text_parts:
+                # Create the chunk from what's accumulated so far
+                current_text = ' '.join(current_text_parts)
+                tokenized_chunk = tokenize(phonemize(current_text, lang=voice_name[0]))
+                chunks.append(tokenized_chunk)
+
+                # Reset trackers
+                current_text_parts = []
+                current_chunk_len = 0
+
+                
+            current_text_parts.append(text_part)
+            current_chunk_len += additional_tokens
+
+
+        # Add remaining words as the final chunk if any
+        if current_text_parts:
+            current_text = ' '.join(current_text_parts)
+            tokenized_chunk = tokenize(phonemize(current_text, lang=voice_name[0]))
+            chunks.append(tokenized_chunk)
 
     out = {'out': [], 'ps': []}
     for i, chunk in enumerate(chunks):
