@@ -29,7 +29,7 @@ This is just a workaround and not a perfect solution. If a word is built with mu
 #### Roadmap
 - [x] Implement the extension
 - [x] Support all OS
-- [ ] Voice selection
+- [x] Voice selection
 
 
 #### Contributing
