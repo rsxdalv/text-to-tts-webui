@@ -68,32 +68,31 @@ def split_text(text):
     current_chunk_len = 0
 
 
-    tokenized_text_whole = tokenize(phonemize(text, lang=voice_name[0]))
-    if len(tokenized_text_whole) > max_token:
-        for text_part in text_parts:
-            tokenized_textpart = tokenize(phonemize(text_part, lang=voice_name[0]))
-            additional_tokens = len(tokenized_textpart) + 1
 
-            if current_chunk_len + additional_tokens > max_token and current_text_parts:
-                # Create the chunk from what's accumulated so far
-                current_text = ' '.join(current_text_parts)
-                tokenized_chunk = tokenize(phonemize(current_text, lang=voice_name[0]))
-                chunks.append(tokenized_chunk)
+    for text_part in text_parts:
+        tokenized_textpart = tokenize(phonemize(text_part, lang=voice_name[0]))
+        additional_tokens = len(tokenized_textpart) + 1
 
-                # Reset trackers
-                current_text_parts = []
-                current_chunk_len = 0
-
-                
-            current_text_parts.append(text_part)
-            current_chunk_len += additional_tokens
-
-
-        # Add remaining words as the final chunk if any
-        if current_text_parts:
+        if current_chunk_len + additional_tokens > max_token and current_text_parts:
+            # Create the chunk from what's accumulated so far
             current_text = ' '.join(current_text_parts)
             tokenized_chunk = tokenize(phonemize(current_text, lang=voice_name[0]))
             chunks.append(tokenized_chunk)
+
+            # Reset trackers
+            current_text_parts = []
+            current_chunk_len = 0
+
+            
+        current_text_parts.append(text_part)
+        current_chunk_len += additional_tokens
+
+
+    # Add remaining words as the final chunk if any
+    if current_text_parts:
+        current_text = ' '.join(current_text_parts)
+        tokenized_chunk = tokenize(phonemize(current_text, lang=voice_name[0]))
+        chunks.append(tokenized_chunk)
 
     out = {'out': [], 'ps': []}
     for i, chunk in enumerate(chunks):
