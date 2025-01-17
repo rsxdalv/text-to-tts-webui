@@ -7,6 +7,10 @@ import numpy as np
 from pydub import AudioSegment
 import pathlib
 from huggingface_hub import snapshot_download
+from modules import shared
+from .voices import VOICES
+
+
 
 snapshot_download(repo_id="hexgrad/Kokoro-82M", cache_dir =pathlib.Path(__file__).parent, allow_patterns=["*.pth", "*.pt"])
 
@@ -19,26 +23,29 @@ from .kokoro import generate, tokenize, phonemize
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 model_path = pathlib.Path(__file__).parent / 'models--hexgrad--Kokoro-82M' / 'snapshots' / 'e78b910980f63ec856f07ba02a24752a5ab7af5b' / 'kokoro-v0_19.pth'
 MODEL = build_model(model_path, device)
-VOICE_NAME = [
-    'af', # Default voice is a 50-50 mix of Bella & Sarah
-    'af_bella', 'af_sarah', 'am_adam', 'am_michael',
-    'bf_emma', 'bf_isabella', 'bm_george', 'bm_lewis',
-    'af_nicole', 'af_sky',
-][5]
-voise_path = pathlib.Path(__file__).parent / 'models--hexgrad--Kokoro-82M' / 'snapshots' / 'e78b910980f63ec856f07ba02a24752a5ab7af5b' / 'voices' / f'{VOICE_NAME}.pt'
-VOICEPACK = torch.load(voise_path, weights_only=True).to(device)
-print(f'Loaded voice: {VOICE_NAME}')
 
-def run(text):
+voice_name, voicepack = None, None
+
+def load_voice(voice=None):
+    global voice_name, voicepack
+    voice_name = voice or VOICES[0]
+    voise_path = pathlib.Path(__file__).parent / 'models--hexgrad--Kokoro-82M' / 'snapshots' / 'e78b910980f63ec856f07ba02a24752a5ab7af5b' / 'voices' / f'{voice_name}.pt'
+    voicepack = torch.load(voise_path, weights_only=True).to(device)
+    print(f'Loaded voice: {voice_name}')
+
+load_voice()
+
+
+
+def run(text, preview=False):
     msg_id = str(uuid.uuid4())
-    ps = phonemize(text, lang=VOICE_NAME[0])
+    ps = phonemize(text, lang=voice_name[0])
     tokenized_text = tokenize(ps)
     out = split_text(tokenized_text)
     segments = generate_audio_chunks(out)
     full_adio = concatenate_audio_segments(segments)
 
-    audio_path = pathlib.Path(__file__).parent / '..' / 'audio' / f'{msg_id}.wav'
-
+    audio_path = pathlib.Path(__file__).parent / '..' / 'audio' / f'{"preview" if preview else msg_id}.wav'
     full_adio.export(audio_path, format="wav")
 
     return msg_id
@@ -58,7 +65,7 @@ def split_text(tokenized_text):
 
     out = {'out': [], 'ps': []}
     for i, chunk in enumerate(chunks):
-        out_chunk, ps = generate(MODEL, chunk, VOICEPACK, lang=VOICE_NAME[0])
+        out_chunk, ps = generate(MODEL, chunk, voicepack, lang=voice_name[0])
         out['out'].append(out_chunk)
         out['ps'].append(ps)
 
