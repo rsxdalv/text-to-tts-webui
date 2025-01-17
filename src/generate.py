@@ -2,7 +2,6 @@ import uuid
 from .models import build_model
 import torch
 import os
-from transformers import AutoTokenizer
 import numpy as np
 from pydub import AudioSegment
 import pathlib
@@ -39,9 +38,7 @@ load_voice()
 
 def run(text, preview=False):
     msg_id = str(uuid.uuid4())
-    ps = phonemize(text, lang=voice_name[0])
-    tokenized_text = tokenize(ps)
-    out = split_text(tokenized_text)
+    out = split_text(text)
     segments = generate_audio_chunks(out)
     full_adio = concatenate_audio_segments(segments)
 
@@ -50,18 +47,38 @@ def run(text, preview=False):
 
     return msg_id
 
-def split_text(tokenized_text):
+def split_text(text):
     
-    chunk_size = 510
+    max_token = 510
+    words = text.split()
+    current_words = []
+    chunks = []
+    current_chunk_len = 0
 
-    if len(tokenized_text) > chunk_size:
-        print(f'Text is too long ({len(tokenized_text)} tokens), splitting into chunks of {chunk_size} tokens')
-        chunks = [
-            tokenized_text[i:i + chunk_size]
-            for i in range(0, len(tokenized_text), chunk_size)
-        ]
-    else:
-        chunks = [tokenized_text]
+    tokenized_text = tokenize(phonemize(text, lang=voice_name[0]))
+    if len(tokenized_text) > max_token:
+        for word in words:
+            tokenized_word = tokenize(phonemize(word, lang=voice_name[0]))
+            additional_tokens = len(tokenized_word) + (1 if current_words else 0)
+            # Check if adding this word exceeds the token limit
+            if current_chunk_len + additional_tokens > max_token and current_words:
+                current_text = ' '.join(current_words)
+                tokenized_chunk = tokenize(phonemize(current_text, lang=voice_name[0]))
+                print(f'Chunk length: {len(tokenized_chunk)}')
+                chunks.append(tokenized_chunk)
+                current_words = []
+                current_chunk_len = 0
+
+            else:
+                current_words.append(word)
+                current_chunk_len += additional_tokens
+
+        # Add remaining words as the final chunk if any
+        if current_words:
+            current_text = ' '.join(current_words)
+            tokenized_chunk = tokenize(phonemize(current_text, lang=voice_name[0]))
+            print(f'Chunk length: {len(tokenized_chunk)}')
+            chunks.append(tokenized_chunk)
 
     out = {'out': [], 'ps': []}
     for i, chunk in enumerate(chunks):
