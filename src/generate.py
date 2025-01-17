@@ -14,6 +14,7 @@ import nltk
 
 snapshot_download(repo_id="hexgrad/Kokoro-82M", cache_dir =pathlib.Path(__file__).parent, allow_patterns=["*.pth", "*.pt"])
 nltk.download('punkt')
+nltk.download('punkt_tab')
 
 if os.name == 'nt':
     os.environ["PHONEMIZER_ESPEAK_LIBRARY"] = r"C:\Program Files\eSpeak NG\libespeak-ng.dll"
