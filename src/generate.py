@@ -23,7 +23,13 @@ if os.name == 'nt':
 
 from .kokoro import generate, tokenize, phonemize
 
-device = 'cuda' if torch.cuda.is_available() else 'cpu'
+if torch.cuda.is_available():
+    if torch.cuda.device_count() > 1:
+        device = 'cuda:0'
+    else:
+        device = 'cuda'
+else:
+    device = 'cpu'
 
 
 snapshot_path = pathlib.Path(__file__).parent / 'models--hexgrad--Kokoro-82M' / 'snapshots'
