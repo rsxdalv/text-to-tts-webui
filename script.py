@@ -59,9 +59,7 @@ def output_modifier(string, state):
     string_for_tts = string_for_tts.replace('*', '')
     string_for_tts = string_for_tts.replace('`', '')
 
-    with open('last_message.txt', 'w') as f:
-        f.write(string_for_tts)
-
+ 
     # Run your custom logic to generate audio
     msg_id = run(string_for_tts)
 

@@ -12,11 +12,14 @@ from .voices import VOICES
 from nltk.tokenize import sent_tokenize
 import nltk
 
-
+# Download the Kokoro weights
 snapshot_download(repo_id="hexgrad/Kokoro-82M", cache_dir =pathlib.Path(__file__).parent, allow_patterns=["*.pth", "*.pt"])
+
+# Download the models for sentance splitting
 nltk.download('punkt')
 nltk.download('punkt_tab')
 
+# Set the environment variables for eSpeak NG on Windows
 if os.name == 'nt':
     os.environ["PHONEMIZER_ESPEAK_LIBRARY"] = r"C:\Program Files\eSpeak NG\libespeak-ng.dll"
     os.environ["PHONEMIZER_ESPEAK_PATH"] = r"C:\Program Files\eSpeak NG\espeak-ng.exe"
@@ -41,6 +44,11 @@ MODEL = None
 voice_name, voicepack = None, None
 
 def load_voice(voice=None):
+    """Load a voice by name.
+    
+    Args:
+        voice (str, optional): The name of the voice to load. Defaults to `af`.
+    """
     global voice_name, voicepack
     voice_name = voice or VOICES[0]
     voise_path = snapshot_path / 'voices' / f'{voice_name}.pt'
@@ -52,11 +60,20 @@ load_voice()
 
 
 def run(text, preview=False):
+    """Generate audio from text.
+
+    Args:
+        text (str): The text to generate audio from.
+        preview (bool, optional): Whether to generate a preview audio. Defaults to False.
+
+    Returns:
+        str: The message ID.
+    """
     global MODEL, voicepack
     MODEL = build_model(model_path, device)
     msg_id = str(uuid.uuid4())
-    out = split_text(text)
-    segments = generate_audio_chunks(out)
+    text_chunks = split_text(text)
+    segments = generate_audio_chunks(text_chunks)
     full_adio = concatenate_audio_segments(segments)
     audio_path = pathlib.Path(__file__).parent / '..' / 'audio' / f'{"preview" if preview else msg_id}.wav'
     full_adio.export(audio_path, format="wav")
@@ -69,6 +86,11 @@ def run(text, preview=False):
 sentance_based = True
 
 def set_plitting_type(method="Split by Sentance"):
+    """Set the splitting method for the text.
+
+    Args:
+        method (str, optional): The splitting method. Defaults to "Split by Sentance".
+    """
     global sentance_based
     sentance_based = True if method == "Split by Sentance" else False
     print(f'Splitting method: {"Sentance" if sentance_based else "Word"}')
@@ -76,6 +98,14 @@ def set_plitting_type(method="Split by Sentance"):
 set_plitting_type()
 
 def split_text(text):
+    """Split the text into chunks of sentances or word up to 510 token.
+
+    Args:
+        text (str): The text to split.
+
+    Returns:
+        list: The text chunks.
+    """
 
     global MODEL
     
@@ -115,16 +145,25 @@ def split_text(text):
 
     del text_parts
 
+    return chunks
+
+
+def generate_audio_chunks(chunks):
+    """Generate audio chunks from the text chunks.
+
+    Args:
+        chunks (list): The text chunks.
+
+    Returns:
+        list: The audio segments.
+    """
+
     out = {'out': [], 'ps': []}
     for i, chunk in enumerate(chunks):
         out_chunk, ps = generate(MODEL, chunk, voicepack, lang=voice_name[0])
         out['out'].append(out_chunk)
         out['ps'].append(ps)
 
-    return out
-
-
-def generate_audio_chunks(out):
     segments = []
 
     for i, chunk in enumerate(out['out']):
@@ -142,6 +181,14 @@ def generate_audio_chunks(out):
     return segments
 
 def concatenate_audio_segments(segments):
+    """Concatenate audio segments.
+
+    Args:
+        segments (list): The audio segments to concatenate.
+
+    Returns:
+        AudioSegment: The concatenated audio segment.
+    """
 
     # Concatenate all segments
     audio_segment = segments[0]
