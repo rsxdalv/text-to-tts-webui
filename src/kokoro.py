@@ -136,6 +136,9 @@ def forward(model, tokens, ref_s, speed):
     return model.decoder(asr, F0_pred, N_pred, ref_s[:, :128]).squeeze().cpu().numpy()
 
 def generate(model, tokens, voicepack, lang='a', speed=1, ps=None):
+    """ Removed the phonemize and tokenize function call from here to split_text function in gererate.py
+    that this function now takes in the tokens (that will never be longer then 510) instead of the text.
+    """
     if not tokens:
         return None
     elif len(tokens) > 510:

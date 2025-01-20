@@ -32,6 +32,9 @@ The following methods for this are available:
 
 The first method is recommended as it will keep the context of the text and results in better output quality.
 
+#### Multiple GPU
+If you have multiple GPUs, the first one will be used by default. You can change that in `src/generate.py` by setting the `device` variable to the desired GPU.
+
 #### Roadmap
 - [x] Implement the extension
 - [x] Support all OS
