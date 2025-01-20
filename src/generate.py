@@ -1,3 +1,4 @@
+import gc
 import uuid
 from .models import build_model
 import torch
@@ -23,30 +24,39 @@ if os.name == 'nt':
 from .kokoro import generate, tokenize, phonemize
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
-model_path = pathlib.Path(__file__).parent / 'models--hexgrad--Kokoro-82M' / 'snapshots' / 'e78b910980f63ec856f07ba02a24752a5ab7af5b' / 'kokoro-v0_19.pth'
-MODEL = build_model(model_path, device)
+
+
+snapshot_path = pathlib.Path(__file__).parent / 'models--hexgrad--Kokoro-82M' / 'snapshots'
+snapshot_path = snapshot_path / os.listdir(snapshot_path)[0]
+
+model_path = snapshot_path / 'kokoro-v0_19.pth'
+MODEL = None
 
 voice_name, voicepack = None, None
 
 def load_voice(voice=None):
     global voice_name, voicepack
     voice_name = voice or VOICES[0]
-    voise_path = pathlib.Path(__file__).parent / 'models--hexgrad--Kokoro-82M' / 'snapshots' / 'e78b910980f63ec856f07ba02a24752a5ab7af5b' / 'voices' / f'{voice_name}.pt'
+    voise_path = snapshot_path / 'voices' / f'{voice_name}.pt'
     voicepack = torch.load(voise_path, weights_only=True).to(device)
     print(f'Loaded voice: {voice_name}')
+
 
 load_voice()
 
 
-
 def run(text, preview=False):
+    global MODEL, voicepack
+    MODEL = build_model(model_path, device)
     msg_id = str(uuid.uuid4())
     out = split_text(text)
     segments = generate_audio_chunks(out)
     full_adio = concatenate_audio_segments(segments)
-
     audio_path = pathlib.Path(__file__).parent / '..' / 'audio' / f'{"preview" if preview else msg_id}.wav'
     full_adio.export(audio_path, format="wav")
+
+    del MODEL
+    gc.collect()
 
     return msg_id
 
@@ -60,6 +70,8 @@ def set_plitting_type(method="Split by Sentance"):
 set_plitting_type()
 
 def split_text(text):
+
+    global MODEL
     
     max_token = 510
     text_parts = sent_tokenize(text) if sentance_based else text.split()
@@ -93,6 +105,9 @@ def split_text(text):
         current_text = ' '.join(current_text_parts)
         tokenized_chunk = tokenize(phonemize(current_text, lang=voice_name[0]))
         chunks.append(tokenized_chunk)
+
+
+    del text_parts
 
     out = {'out': [], 'ps': []}
     for i, chunk in enumerate(chunks):
