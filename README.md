@@ -1,4 +1,4 @@
-### Kokoro based TTS Extension for obabooga text gereration webui
+### Kokoro based TTS Extension for [obabooga text gereration webui](https://github.com/oobabooga/text-generation-webui)
 
 #### License
 This project is licensed under the MIT License and is based on the [Original Kokoro 82M Interferance Code](https://huggingface.co/hexgrad/Kokoro-82M).
