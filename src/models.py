@@ -362,7 +362,7 @@ def build_model(path, device):
         decoder=decoder.to(device).eval(),
         text_encoder=text_encoder.to(device).eval(),
     )
-    for key, state_dict in torch.load(path, map_location='cpu', weights_only=True)['net'].items():
+    for key, state_dict in torch.load(path, map_location='cpu', weights_only=True).items():
         assert key in model, key
         try:
             model[key].load_state_dict(state_dict)
