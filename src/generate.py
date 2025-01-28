@@ -1,4 +1,5 @@
 import gc
+import shutil
 import uuid
 from .models import build_model
 import torch
@@ -13,7 +14,20 @@ from nltk.tokenize import sent_tokenize
 import nltk
 
 # Download the Kokoro weights
+
+snapshot_path_base = pathlib.Path(__file__).parent / 'models--hexgrad--Kokoro-82M' / 'snapshots'
+snapshot_paths = os.listdir(snapshot_path_base)
+
+for snapshot_path in snapshot_paths:
+    if (snapshot_path_base / snapshot_path / 'kokoro-v0_19.pth').is_file():
+        shutil.rmtree(snapshot_path_base)
+        break
+
+   
+
 snapshot_download(repo_id="hexgrad/Kokoro-82M", cache_dir =pathlib.Path(__file__).parent)
+
+snapshot_path = snapshot_path_base / snapshot_paths[0]
 
 # Download the models for sentance splitting
 nltk.download('punkt')
@@ -35,8 +49,8 @@ else:
     device = 'cpu'
 
 
-snapshot_path = pathlib.Path(__file__).parent / 'models--hexgrad--Kokoro-82M' / 'snapshots'
-snapshot_path = snapshot_path / os.listdir(snapshot_path)[0]
+    
+
 
 model_path = snapshot_path / 'kokoro-v1_0.pth'
 MODEL = None
