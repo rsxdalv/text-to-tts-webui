@@ -13,7 +13,7 @@ from nltk.tokenize import sent_tokenize
 import nltk
 
 # Download the Kokoro weights
-snapshot_download(repo_id="hexgrad/Kokoro-82M", cache_dir =pathlib.Path(__file__).parent, allow_patterns=["*.pth", "*.pt"])
+snapshot_download(repo_id="hexgrad/Kokoro-82M", cache_dir =pathlib.Path(__file__).parent)
 
 # Download the models for sentance splitting
 nltk.download('punkt')
@@ -38,7 +38,7 @@ else:
 snapshot_path = pathlib.Path(__file__).parent / 'models--hexgrad--Kokoro-82M' / 'snapshots'
 snapshot_path = snapshot_path / os.listdir(snapshot_path)[0]
 
-model_path = snapshot_path / 'kokoro-v0_19.pth'
+model_path = snapshot_path / 'kokoro-v1_0.pth'
 MODEL = None
 
 voice_name, voicepack = None, None
@@ -50,7 +50,7 @@ def load_voice(voice=None):
         voice (str, optional): The name of the voice to load. Defaults to `af`.
     """
     global voice_name, voicepack
-    voice_name = voice or VOICES[0]
+    voice_name = voice or ('af_bella' or VOICES[0])
     voise_path = snapshot_path / 'voices' / f'{voice_name}.pt'
     voicepack = torch.load(voise_path, weights_only=True).to(device)
     print(f'Loaded voice: {voice_name}')
