@@ -72,6 +72,7 @@ def normalize_text(text):
     return text.strip()
 
 def get_vocab():
+    # Probably needs updates starting here to support other languages
     _pad = "$"
     _punctuation = ';:,.!?¡¿—…"«»“” '
     _letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'

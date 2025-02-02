@@ -10,6 +10,9 @@ Enhance your text generation experience with the Kokoro TTS extension, seamlessl
 
 ## Features
 
+**Current Version:** Kokoro v1
+**Supported Languages:** English
+
 Kokoro TTS is limited to inputs up to **510 tokens**. *Note that Kokoro tokens differ from LLM tokens.* This extension allows you to generate longer audio outputs by splitting the input text into segments and concatenating the resulting audio.
 
 ### Text Splitting Methods
@@ -65,6 +68,7 @@ By default, the extension utilizes the first available GPU. To specify a differe
 - [x] Kokoro v1
 - [x] Support for all operating systems
 - [x] Voice selection feature
+- [ ] Support for other languages than English
 - [ ] Support for future versions of Kokoro
 
 ## Contributing
