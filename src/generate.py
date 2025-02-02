@@ -9,25 +9,34 @@ from pydub import AudioSegment
 import pathlib
 from huggingface_hub import snapshot_download
 from modules import shared
-from .voices import VOICES
 from nltk.tokenize import sent_tokenize
 import nltk
 
 # Download the Kokoro weights
 
-snapshot_path_base = pathlib.Path(__file__).parent / 'models--hexgrad--Kokoro-82M' / 'snapshots'
-snapshot_paths = os.listdir(snapshot_path_base)
+def download_kokoro_weights():
+    """Download the Kokoro weights."""
+    
+    snapshot_path_base = pathlib.Path(__file__).parent / 'models--hexgrad--Kokoro-82M' / 'snapshots'
+    try:
+        snapshot_paths = os.listdir(snapshot_path_base)
+    except FileNotFoundError:
+        snapshot_paths = None
+    if snapshot_paths:
+        for snapshot_path in snapshot_paths:
+            if (snapshot_path_base / snapshot_path / 'kokoro-v0_19.pth').is_file():
+                shutil.rmtree(snapshot_path_base)
+                break
 
-for snapshot_path in snapshot_paths:
-    if (snapshot_path_base / snapshot_path / 'kokoro-v0_19.pth').is_file():
-        shutil.rmtree(snapshot_path_base)
-        break
 
-   
+    snapshot_download(repo_id="hexgrad/Kokoro-82M", cache_dir =pathlib.Path(__file__).parent)
+    if not snapshot_paths:
+        snapshot_paths = os.listdir(snapshot_path_base)
+    from .voices import VOICES
 
-snapshot_download(repo_id="hexgrad/Kokoro-82M", cache_dir =pathlib.Path(__file__).parent)
+    return snapshot_path_base / snapshot_paths[0]
 
-snapshot_path = snapshot_path_base / snapshot_paths[0]
+snapshot_path = download_kokoro_weights()
 
 # Download the models for sentance splitting
 nltk.download('punkt')
