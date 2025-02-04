@@ -27,7 +27,7 @@ def voice_preview():
 
 def ui():
     info_voice = """Select a Voice. \nThe default voice is a 50-50 mix of Bella & Sarah\nVoices starting with 'a' are American
-     englisch, voices with 'b' are British englisch"""
+     english, voices with 'b' are British english"""
     with gr.Accordion("Kokoro"):
         voice = gr.Dropdown(choices=VOICES, value=VOICES[0], label="Voice", info=info_voice, interactive=True)
 
@@ -35,9 +35,9 @@ def ui():
 
         preview_output = gr.HTML()
 
-        info_splitting ="""Kokoro only supports 510 tokens. One method to split the text is by sentance (default), the otherway
+        info_splitting ="""Kokoro only supports 510 tokens. One method to split the text is by sentence (default), the otherway
         is by word up to 510 tokens. """
-        spltting_method = gr.Radio(["Split by Sentance", "Split by Word"], info=info_splitting, value="Split by Sentance", label_lines=2, interactive=True)
+        spltting_method = gr.Radio(["Split by sentence", "Split by Word"], info=info_splitting, value="Split by sentence", label_lines=2, interactive=True)
 
 
     voice.change(voice_update, voice)
