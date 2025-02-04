@@ -38,7 +38,7 @@ def download_kokoro_weights():
 
 snapshot_path = download_kokoro_weights()
 
-# Download the models for sentance splitting
+# Download the models for sentence splitting
 nltk.download('punkt')
 nltk.download('punkt_tab')
 
@@ -106,22 +106,22 @@ def run(text, preview=False):
 
     return msg_id
 
-sentance_based = True
+sentence_based = True
 
-def set_plitting_type(method="Split by Sentance"):
+def set_plitting_type(method="Split by sentence"):
     """Set the splitting method for the text.
 
     Args:
-        method (str, optional): The splitting method. Defaults to "Split by Sentance".
+        method (str, optional): The splitting method. Defaults to "Split by sentence".
     """
-    global sentance_based
-    sentance_based = True if method == "Split by Sentance" else False
-    print(f'Splitting method: {"Sentance" if sentance_based else "Word"}')
+    global sentence_based
+    sentence_based = True if method == "Split by sentence" else False
+    print(f'Splitting method: {"sentence" if sentence_based else "Word"}')
 
 set_plitting_type()
 
 def split_text(text):
-    """Split the text into chunks of sentances or word up to 510 token.
+    """Split the text into chunks of sentences or word up to 510 token.
 
     Args:
         text (str): The text to split.
@@ -133,7 +133,7 @@ def split_text(text):
     global MODEL
     
     max_token = 510
-    text_parts = sent_tokenize(text) if sentance_based else text.split()
+    text_parts = sent_tokenize(text) if sentence_based else text.split()
     current_text_parts = []
     chunks = []
     current_chunk_len = 0
