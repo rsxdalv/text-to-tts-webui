@@ -18,6 +18,7 @@ Kokoro TTS is limited to inputs up to **510 tokens**. *Note that Kokoro tokens d
 ### Text Splitting Methods
 
 - **Split by Sentence:** Divides the text into chunks of complete sentences, each chunk containing fewer than or 510 tokens.
+    - This method may fail to split the text into sentences if the input text contains unusual punctuation or formatting. In such cases, the extension will fall back to the "Split by Word" method for this one text.
 - **Split by Word:** Divides the text into chunks of individual words, each chunk containing fewer than or 510 tokens.
 
 *I recommend using the "Split by Sentence" method to maintain context and ensure higher quality audio output.*
@@ -68,6 +69,7 @@ By default, the extension utilizes the first available GPU. To specify a differe
 - [x] Kokoro v1
 - [x] Support for all operating systems
 - [x] Voice selection feature
+- [ ] Only switch to "Split by Word" for the failing text part, not the entire text
 - [ ] Support for other languages than English
 - [ ] Support for future versions of Kokoro
 
