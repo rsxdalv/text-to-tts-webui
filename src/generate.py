@@ -103,6 +103,7 @@ def run(text, preview=False):
             set_plitting_type("Word")
             text_chunks = split_text(text)
             segments = generate_audio_chunks(text_chunks)
+            set_plitting_type()
 
     full_adio = concatenate_audio_segments(segments)
     audio_path = pathlib.Path(__file__).parent / '..' / 'audio' / f'{"preview" if preview else msg_id}.wav'
