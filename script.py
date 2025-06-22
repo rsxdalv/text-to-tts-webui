@@ -30,17 +30,6 @@ def setup():
     pass
 
 
-def voice_update(voice):
-    load_voice(voice)
-    return gr.Dropdown(
-        choices=VOICES,
-        value=voice,
-        label="Voice",
-        info="Select Voice",
-        interactive=True,
-    )
-
-
 def voice_preview():
     msg_id = generate_audio("This is a preview of the selected voice")
     audio_dir = pathlib.Path(__file__).parent / "audio" / f"{msg_id}.wav"
@@ -48,7 +37,24 @@ def voice_preview():
     return f'<audio controls><source src="file/{audio_url}" type="audio/mpeg"></audio>'
 
 
-def ui():
+def kokoro_settings():
+    gr.Markdown("## Kokoro TTS Settings")
+
+    endpoint = gr.Textbox(
+        label="Endpoint",
+        value="http://localhost:7778/v1/audio/speech",
+        info="Endpoint for the Kokoro TTS server",
+        interactive=True,
+    )
+
+    def set_endpoint(endpoint):
+        global settings
+        settings["endpoint"] = endpoint
+
+        return gr.update(value=endpoint)
+
+    endpoint.change(set_endpoint, endpoint)
+
     info_voice = """Select a Voice. \nThe default voice is a 50-50 mix of Bella & Sarah\nVoices starting with 'a' are American
      english, voices with 'b' are British english"""
     with gr.Accordion("Kokoro"):
@@ -67,37 +73,53 @@ def ui():
 
         preview_output = gr.HTML()
 
-        info_splitting = """Kokoro only supports 510 tokens. One method to split the text is by sentence (default), the otherway
-        is by word up to 510 tokens. """
-        spltting_method = gr.Radio(
-            ["Split by sentence", "Split by Word"],
-            info=info_splitting,
-            value="Split by sentence",
-            label_lines=2,
-            interactive=True,
-        )
+    def voice_update(voice):
+        settings["voice"] = voice
 
     voice.change(voice_update, voice)
     preview.click(fn=voice_preview, outputs=preview_output)
 
-    # spltting_method.change(set_plitting_type, spltting_method)
+
+def chatterbox_settings():
+    gr.Markdown("## Chatterbox Settings")
+
+
+def ui():
+    gr.Markdown("# TTS WebUI Extension Settings")
+    with gr.Tabs():
+        with gr.Tab("Kokoro"):
+            kokoro_settings()
+        with gr.Tab("Chatterbox"):
+            chatterbox_settings()
+
+
+settings = {
+    "endpoint": "http://localhost:7778/v1/audio/speech",
+    "model": "hexgrad/Kokoro-82M",
+    "voice": "af_heart",
+    "speed": 1.0,
+}
+
+generation_params_by_model = {
+    "hexgrad/Kokoro-82M": {
+        "pitch_up_key": "2",
+        "index_path": "CaitArcane/added_IVF65_Flat_nprobe_1_CaitArcane_v2",
+    },
+    "chatterbox": {},
+}
 
 
 def generate_audio(text: str):
     import requests
 
     response = requests.post(
-        "http://localhost:7778/v1/audio/speech",
+        settings["endpoint"],
         json={
-            "model": "hexgrad/Kokoro-82M",
-            # "input": "Hello world with custom parameters.",
+            "model": settings["model"],
+            "voice": settings["voice"],
+            "speed": settings["speed"],
+            "params": generation_params_by_model.get(settings["model"], {}),
             "input": text,
-            "voice": "af_heart",
-            "speed": 1.0,
-            "params": {
-                "pitch_up_key": "2",
-                "index_path": "CaitArcane/added_IVF65_Flat_nprobe_1_CaitArcane_v2",
-            },
         },
     )
     audio = response.content
