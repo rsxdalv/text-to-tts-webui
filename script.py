@@ -3,6 +3,7 @@ import html
 import time
 import gradio as gr
 import time
+from .lib.kokoro_choices import CHOICES as kokoro_choices
 
 params = {
     "display_name": "TTS WebUI",
@@ -46,58 +47,35 @@ def update_voice(model):
     return inner
 
 
+def update_generation_params(model):
+    def inner(param):
+        def inner2(value):
+            global generation_params_by_model
+            generation_params_by_model[model][param] = value
+
+        return inner2
+
+    return inner
+
+
 def kokoro_settings():
     gr.Markdown("## Kokoro TTS Settings")
 
-    endpoint = gr.Textbox(
-        label="Endpoint",
-        value="http://localhost:7778/v1/audio/speech",
-        info="Endpoint for the Kokoro TTS server",
-        interactive=True,
-    )
-
-    endpoint.change(update_setting("endpoint"), endpoint)
-
-    model = gr.Dropdown(
-        choices=[
-            "hexgrad/Kokoro-82M",
-            "chatterbox",
-        ],
-        value="hexgrad/Kokoro-82M",
-        label="Model",
-        info="Model to use for TTS",
-        interactive=True,
-    )
-
-    model.change(update_setting("model"), model)
-
-    info_voice = """Select a Voice. \nThe default voice is a 50-50 mix of Bella & Sarah\nVoices starting with 'a' are American
+    info_voice = """Select a Voice. \nThe default voice is af_heart.\nVoices starting with 'a' are American
      english, voices with 'b' are British english"""
-    with gr.Accordion("Kokoro"):
-        voice = gr.Dropdown(
-            choices=[
-                "af_heart",
-                "af_heart2",
-            ],
-            value="af_heart",
-            label="Voice",
-            info=info_voice,
-            interactive=True,
-        )
+    voice = gr.Dropdown(
+        choices=list(kokoro_choices.items()),
+        value="af_heart",
+        label="Voice",
+        info=info_voice,
+        interactive=True,
+    )
 
-        preview = gr.Button("Voice preview", type="secondary")
+    preview = gr.Button("Voice preview", type="secondary")
 
-        preview_output = gr.HTML()
+    preview_output = gr.HTML()
 
     voice.change(update_voice("hexgrad/Kokoro-82M"), voice)
-
-    def voice_preview():
-        msg_id = generate_audio("This is a preview of the selected voice")
-        audio_dir = pathlib.Path(__file__).parent / "audio" / f"{msg_id}.wav"
-        audio_url = f"{audio_dir.as_posix()}?v=f{int(time.time())}"
-        return (
-            f'<audio controls><source src="file/{audio_url}" type="audio/mpeg"></audio>'
-        )
 
     preview.click(fn=voice_preview, outputs=preview_output)
 
@@ -105,10 +83,54 @@ def kokoro_settings():
 def chatterbox_settings():
     gr.Markdown("## Chatterbox Settings")
 
+    voice = gr.Dropdown(
+        choices=[
+            "voices/chatterbox/Alice.wav",
+            "voices/chatterbox/Emmett.wav",
+            "voices/chatterbox/Sloane.wav",
+        ],
+        value="voices/chatterbox/Alice.wav",
+        label="Voice",
+        info="Voice to use for TTS",
+        interactive=True,
+    )
+
+    preview = gr.Button("Voice preview", type="secondary")
+
+    preview_output = gr.HTML()
+
+    voice.change(update_voice("chatterbox"), voice)
+
+    preview.click(fn=voice_preview, outputs=preview_output)
+
 
 def ui():
     gr.Markdown("# TTS WebUI Extension Settings")
-    with gr.Tabs():
+
+    with gr.Column():
+        endpoint = gr.Textbox(
+            label="Endpoint",
+            value="http://localhost:7778/v1/audio/speech",
+            info="Endpoint for the Kokoro TTS server",
+            interactive=True,
+        )
+
+        endpoint.change(update_setting("endpoint"), endpoint)
+
+        model = gr.Dropdown(
+            choices=[
+                "hexgrad/Kokoro-82M",
+                "chatterbox",
+            ],
+            value="hexgrad/Kokoro-82M",
+            label="Model",
+            info="Model to use for TTS",
+            interactive=True,
+        )
+
+        model.change(update_setting("model"), model)
+
+    with gr.Column(), gr.Tabs():
         with gr.Tab("Kokoro"):
             kokoro_settings()
         with gr.Tab("Chatterbox"):
@@ -177,3 +199,10 @@ def output_modifier(string, state, is_chat=False):
     string += f'<audio controls><source src="file/{audio_dir.as_posix()}" type="audio/mpeg"></audio>'
 
     return string
+
+
+def voice_preview():
+    msg_id = generate_audio("This is a preview of the selected voice")
+    audio_dir = pathlib.Path(__file__).parent / "audio" / f"{msg_id}.wav"
+    audio_url = f"{audio_dir.as_posix()}?v=f{int(time.time())}"
+    return f'<audio controls><source src="file/{audio_url}" type="audio/mpeg"></audio>'
