@@ -55,6 +55,25 @@ def kokoro_settings():
 
     endpoint.change(set_endpoint, endpoint)
 
+    model = gr.Dropdown(
+        choices=[
+            "hexgrad/Kokoro-82M",
+            "chatterbox",
+        ],
+        value="hexgrad/Kokoro-82M",
+        label="Model",
+        info="Model to use for TTS",
+        interactive=True,
+    )
+
+    def set_model(model):
+        global settings
+        settings["model"] = model
+
+        return gr.update(value=model)
+
+    model.change(set_model, model)
+
     info_voice = """Select a Voice. \nThe default voice is a 50-50 mix of Bella & Sarah\nVoices starting with 'a' are American
      english, voices with 'b' are British english"""
     with gr.Accordion("Kokoro"):
@@ -74,7 +93,9 @@ def kokoro_settings():
         preview_output = gr.HTML()
 
     def voice_update(voice):
-        settings["voice"] = voice
+        global voice_by_model
+        voice_by_model["hexgrad/Kokoro-82M"] = voice
+        return gr.update(value=voice)
 
     voice.change(voice_update, voice)
     preview.click(fn=voice_preview, outputs=preview_output)
@@ -96,18 +117,24 @@ def ui():
 settings = {
     "endpoint": "http://localhost:7778/v1/audio/speech",
     "model": "hexgrad/Kokoro-82M",
-    "voice": "af_heart",
     "speed": 1.0,
+}
+
+voice_by_model = {
+    "hexgrad/Kokoro-82M": "af_heart",
+    "chatterbox": "voices/chatterbox/Alice.wav",
 }
 
 generation_params_by_model = {
     "hexgrad/Kokoro-82M": {
-        "pitch_up_key": "2",
-        "index_path": "CaitArcane/added_IVF65_Flat_nprobe_1_CaitArcane_v2",
     },
-    "chatterbox": {},
+    "chatterbox": {
+        "exaggeration": 0.5,
+        "cfg_weight": 0.5,
+        "temperature": 0.8,
+        "dtype": "float32",
+    },
 }
-
 
 def generate_audio(text: str):
     import requests
@@ -116,7 +143,7 @@ def generate_audio(text: str):
         settings["endpoint"],
         json={
             "model": settings["model"],
-            "voice": settings["voice"],
+            "voice": voice_by_model.get(settings["model"], "af_heart"),
             "speed": settings["speed"],
             "params": generation_params_by_model.get(settings["model"], {}),
             "input": text,
