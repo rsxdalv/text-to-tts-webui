@@ -1,6 +1,6 @@
 # [TTS WebUI](https://github.com/rsxdalv/tts-webui) Extension for [Oobabooga Text Generation WebUI](https://github.com/oobabooga/text-generation-webui)
 
-Enhance your text generation experience with the Kokoro TTS extension, seamlessly integrating with the Oobabooga Text Generation WebUI.
+Enhance your text generation experience with the TTS WebUI extension, seamlessly integrating with the Oobabooga Text Generation WebUI.
 
 ## Installation
 
