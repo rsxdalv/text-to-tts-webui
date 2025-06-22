@@ -12,6 +12,11 @@ Once TTS WebUI's OpenAI API is running, you can install this extension by follow
 2. Restart the Oobabooga Text Generation WebUI.
 3. Activate the extension in the Extensions tab of the Oobabooga Text Generation WebUI or use the --extensions command line argument.
 
+## Supported TTS Models
+
+* Kokoro TTS
+* Chatterbox TTS
+
 ## Acknowledgements
 
 This extension is built upon the [KokoroTtsTexGernerationWebui](https://github.com/h43lb1t0/KokoroTtsTexGernerationWebui) repository by [Tom Haelbich](https://github.com/h43lb1t0). License of his work is in the [LICENSE.derived](LICENSE.derived) file.

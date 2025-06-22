@@ -30,11 +30,20 @@ def setup():
     pass
 
 
-def voice_preview():
-    msg_id = generate_audio("This is a preview of the selected voice")
-    audio_dir = pathlib.Path(__file__).parent / "audio" / f"{msg_id}.wav"
-    audio_url = f"{audio_dir.as_posix()}?v=f{int(time.time())}"
-    return f'<audio controls><source src="file/{audio_url}" type="audio/mpeg"></audio>'
+def update_setting(setting):
+    def inner(value):
+        global settings
+        settings[setting] = value
+
+    return inner
+
+
+def update_voice(model):
+    def inner(voice):
+        global voice_by_model
+        voice_by_model[model] = voice
+
+    return inner
 
 
 def kokoro_settings():
@@ -47,13 +56,7 @@ def kokoro_settings():
         interactive=True,
     )
 
-    def set_endpoint(endpoint):
-        global settings
-        settings["endpoint"] = endpoint
-
-        return gr.update(value=endpoint)
-
-    endpoint.change(set_endpoint, endpoint)
+    endpoint.change(update_setting("endpoint"), endpoint)
 
     model = gr.Dropdown(
         choices=[
@@ -66,13 +69,7 @@ def kokoro_settings():
         interactive=True,
     )
 
-    def set_model(model):
-        global settings
-        settings["model"] = model
-
-        return gr.update(value=model)
-
-    model.change(set_model, model)
+    model.change(update_setting("model"), model)
 
     info_voice = """Select a Voice. \nThe default voice is a 50-50 mix of Bella & Sarah\nVoices starting with 'a' are American
      english, voices with 'b' are British english"""
@@ -92,12 +89,16 @@ def kokoro_settings():
 
         preview_output = gr.HTML()
 
-    def voice_update(voice):
-        global voice_by_model
-        voice_by_model["hexgrad/Kokoro-82M"] = voice
-        return gr.update(value=voice)
+    voice.change(update_voice("hexgrad/Kokoro-82M"), voice)
 
-    voice.change(voice_update, voice)
+    def voice_preview():
+        msg_id = generate_audio("This is a preview of the selected voice")
+        audio_dir = pathlib.Path(__file__).parent / "audio" / f"{msg_id}.wav"
+        audio_url = f"{audio_dir.as_posix()}?v=f{int(time.time())}"
+        return (
+            f'<audio controls><source src="file/{audio_url}" type="audio/mpeg"></audio>'
+        )
+
     preview.click(fn=voice_preview, outputs=preview_output)
 
 
@@ -126,8 +127,7 @@ voice_by_model = {
 }
 
 generation_params_by_model = {
-    "hexgrad/Kokoro-82M": {
-    },
+    "hexgrad/Kokoro-82M": {},
     "chatterbox": {
         "exaggeration": 0.5,
         "cfg_weight": 0.5,
@@ -135,6 +135,7 @@ generation_params_by_model = {
         "dtype": "float32",
     },
 }
+
 
 def generate_audio(text: str):
     import requests
