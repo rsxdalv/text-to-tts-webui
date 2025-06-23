@@ -3,9 +3,11 @@ import html
 import time
 import gradio as gr
 import time
+import requests
 
 from .lib.kokoro_choices import CHOICES as kokoro_choices
 from .lib.settings import *
+from .lib.chatterbox import chatterbox_tts 
 # from lib.kokoro_choices import CHOICES as kokoro_choices
 # from lib.settings import *
 
@@ -46,17 +48,7 @@ def kokoro_settings():
 
 
 def chatterbox_settings():
-    voice = gr.Dropdown(
-        choices=[
-            "voices/chatterbox/Alice.wav",
-            "voices/chatterbox/Emmett.wav",
-            "voices/chatterbox/Sloane.wav",
-        ],
-        value="voices/chatterbox/Alice.wav",
-        label="Voice",
-        interactive=True,
-    )
-    voice.change(update_voice("chatterbox"), voice)
+    chatterbox_tts()
 
 
 def main_settings():
@@ -100,15 +92,13 @@ def ui():
             main_settings()
 
         with gr.Column(), gr.Tabs():
-            with gr.Tab("Kokoro"):
-                kokoro_settings()
             with gr.Tab("Chatterbox"):
                 chatterbox_settings()
+            with gr.Tab("Kokoro"):
+                kokoro_settings()
 
 
 def generate_audio(text: str):
-    import requests
-
     response = requests.post(
         settings["endpoint"],
         json={

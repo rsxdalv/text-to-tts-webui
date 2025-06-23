@@ -16,6 +16,15 @@ generation_params_by_model = {
         "cfg_weight": 0.5,
         "temperature": 0.8,
         "dtype": "float32",
+        "chunked": True,
+        "halve_first_chunk": True,
+        "desired_length": 220,
+        "max_length": 300,
+        "device": "auto",
+        "cpu_offload": False,
+        "max_new_tokens": 1000,
+        "max_cache_len": 1500,
+        "use_compilation": False,
     },
 }
 
