@@ -127,7 +127,7 @@ def output_modifier(string, state, is_chat=False):
 
     msg_id = generate_audio(string_for_tts)
     audio_dir = pathlib.Path(__file__).parent / "audio" / f"{msg_id}.wav"
-    string += f'<audio controls><source src="file/{audio_dir.as_posix()}" type="audio/mpeg"></audio>'
+    string += f'<audio controls autoplay><source src="file/{audio_dir.as_posix()}" type="audio/mpeg"></audio>'
     return string
 
 
